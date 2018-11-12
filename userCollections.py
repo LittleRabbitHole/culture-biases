@@ -176,13 +176,14 @@ def WriteOut_Lst2Str2(lst, filename):
         f.close()
 
 ###main   
+#base_data_allarticles_1109 -- process_data_with_topic_location
 data = pd.read_table("/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/base_data_allarticles_1109.csv", 
                              sep=',', error_bad_lines = False)
 
 data.columns.values
 
 #all the event article pages = 4748
-article_df = data[['wiki_lang','article']].drop_duplicates()
+article_df = data[['wiki_lang','article']].drop_duplicates()#4748
 
 #collect all the redirect pages for the current event articles = 26745
 all_article_pages = GetAllPageswithDirect(article_df)
