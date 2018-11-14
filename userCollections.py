@@ -30,11 +30,12 @@ def returnJsonCheck(response) -> dict:
         sys.exit("json error")
 
 
-def GetRevisions(API, pageTitle):
-    #pageTitle = 'Executive_Order_13769'
+def GetRevisions(url):
+    #https://en.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids=31445634&rvlimit=500
+    #https://zh.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids%7Ctimestamp%7Cuser%7Cuserid%7Ccomment%7Csize&pageids=1623767&rvlimit=500
     #https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Executive_Order_13769&rvprop=timestamp|user|comment&generator=revisions
     #url = "https://en.wikipedia.org/w/api.php?action=query&format=json&rvdir=newer&rvlimit=500&prop=revisions&rvprop=ids|timestamp|user|userid|comment&titles=" + pageTitle
-    url = API + pageTitle
+    #url = API + pageid
     revisions = []                                        #list of all accumulated revisions
     next = ''                                             #information for the next request
     while True:
@@ -53,6 +54,10 @@ def GetRevisions(API, pageTitle):
         next = "&rvcontinue=" + cont             #gets the revision Id from which to start the next request
 
     return revisions
+
+
+url = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids=31445634&rvlimit=500"
+results = GetRevisions(url)
 
 
 def GetPageContributors(lang, pageid):
@@ -161,12 +166,12 @@ def WriteOut_Lst2Str1(lst, filename):
 
 def WriteOut_Lst2Str2(lst, filename):
     i = 0
-    outString = 'PageType, Ori_PageID, Lang, Red_PgId, Postid'
+    outString = 'PageType,Ori_PageID,Lang,Red_PgId,Postid'
     #outString = 'Ori_PageID, PageType, pageid, lang, userid'
     for item in lst:
         i += 1
         outString += '\n'
-        outString += ', '.join([item[0],item[1],item[2], str(item[3]), str(item[-1])])
+        outString += ','.join([item[0],item[1],item[2], str(item[3]), str(item[-1])])
         
 #    result_path = '{}/results'.format(file_loc)
 #    if not os.path.exists(result_path):
@@ -178,7 +183,7 @@ def WriteOut_Lst2Str2(lst, filename):
 
 ###main   
 #base_data_allarticles_1109 -- process_data_with_topic_location
-data = pd.read_table("/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/base_data_allarticles_1109.csv", 
+data = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/base_data_allarticles_1109.csv", 
                              sep=',', error_bad_lines = False)
 data = data.loc[data['selected'] != -1].drop_duplicates()
 
@@ -190,7 +195,7 @@ article_df = data[['post_id','wiki_lang','article']].drop_duplicates()#732
 #collect all the redirect pages for the current event articles = 26745
 all_article_pages = GetAllPageswithDirect(article_df)
 #pickle load
-f = open('/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.pkl', 'wb')   # Pickle file is newly created where foo1.py is
+f = open('/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.pkl', 'wb')   # Pickle file is newly created where foo1.py is
 pickle.dump(all_article_pages, f)          # dump data to f
 f.close() 
 
@@ -199,19 +204,24 @@ f.close()
 #f.close()
 
 #write all the pages into csv
-WriteOut_Lst2Str1(all_article_pages, "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.txt") #with title
-WriteOut_Lst2Str2(all_article_pages, "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt") #without title
+WriteOut_Lst2Str1(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.txt") #with title
+WriteOut_Lst2Str2(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt") #without title
+
+#collect all the revisions for the articles
+all_articles = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt", 
+                             sep=',', error_bad_lines = False)
+all_articles = all_articles.loc[all_articles['PageType']=='orig']
+all_articles = all_articles[['Ori_PageID', 'Lang', 'Red_PgId']].drop_duplicates()
+
+
+wiki_link = "https://{}.wikipedia.org/".format(lang)
+API = wiki_link + "w/api.php?action=query&format=json&prop=revisions&titles={}&redirects".format(article)
+
 
 #collect all the contributors for articles
-all_articles = pd.read_table("/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt", 
-                             sep=',', error_bad_lines = False)
-all_articles = all_articles[['Ori_PageID', ' "Lang"', ' "Red_PgId"']].drop_duplicates()
-
-
-#collect all contributors
 all_contributors = GetAllContributors(all_article_pages)
 #pickle load
-f = open('/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors.pkl', 'wb')   # Pickle file is newly created where foo1.py is
+f = open('/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors.pkl', 'wb')   # Pickle file is newly created where foo1.py is
 pickle.dump(all_article_pages, f)          # dump data to f
 f.close() 
 
@@ -219,8 +229,8 @@ f.close()
 #mydict = pickle.load(f)         # load file content as mydict
 #f.close()
 
-WriteOut_Lst2Str1(all_contributors, "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors.txt") #with title
-WriteOut_Lst2Str2(all_contributors, "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors_notitle.txt") #with title
+WriteOut_Lst2Str1(all_contributors, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors.txt") #with title
+WriteOut_Lst2Str2(all_contributors, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors_notitle.txt") #with title
 
 
    
