@@ -101,7 +101,7 @@ def GetAllContributors(all_article_pages):
     return all_contributors
 
 
-def GetRedirectPages(lang, article):
+def GetRedirectPages(postid, lang, article):
     #collect all the redirects for a single article
     #redirectAPI = wiki_link + "w/api.php?action=query&pageids=31593941&redirects&prop=redirects&rdlimit=max"
     allpages = [] # [pgid, redir['pageid'], redir['title']]
@@ -112,14 +112,14 @@ def GetRedirectPages(lang, article):
     pgid = list(r_json['query']['pages'].keys())[0]
     red_pg_lst = r_json['query']['pages'][pgid].get('redirects')
     #append original page
-    allpages.append(["orig", pgid, lang, pgid, article])
+    allpages.append(["orig", pgid, lang, pgid, article, postid])
     #if has the redirect
     if red_pg_lst is not None:
         for item in red_pg_lst:
-            id_title = ["redirct", pgid, lang, item['pageid'], item['title']]
+            id_title = ["redirct", pgid, lang, item['pageid'], item['title'], postid]
             allpages.append(id_title)
     #if without redirect
-    else: allpages.append(["orig", pgid, lang, pgid, r_json['query']['pages'][pgid]['title']])
+    else: allpages.append(["orig", pgid, lang, pgid, r_json['query']['pages'][pgid]['title'], postid])
     return allpages
     
 
@@ -131,9 +131,10 @@ def GetAllPageswithDirect(article_df):
     for index, row in article_df.iterrows():
         counter += 1
         if counter%100 == 0: print (counter)
+        postid = row.loc['post_id']
         lang = row.loc['wiki_lang']
         article = row.loc['article']  
-        alldirectpages = GetRedirectPages(lang, article)
+        alldirectpages = GetRedirectPages(postid, lang, article)
         directpages_alllist += alldirectpages
     #return
     return directpages_alllist
@@ -141,11 +142,12 @@ def GetAllPageswithDirect(article_df):
 
 def WriteOut_Lst2Str1(lst, filename):
     i = 0
-    #outString = 'PageType||Ori_PageID||Lang||Red_PgId||title'
-    outString = 'Ori_PageID||PageType||pageid||lang||userid||name'
+    outString = 'PageType||Ori_PageID||Lang||Red_PgId||title||Postid'
+    #outString = 'Ori_PageID||PageType||pageid||lang||userid||name'
     for item in lst:
         i += 1
-        #item[3] = str(item[3])
+        item[3] = str(item[3])
+        item[-1] = str(item[-1])
         outString += '\n'
         outString += '||'.join(item)
         
@@ -159,13 +161,12 @@ def WriteOut_Lst2Str1(lst, filename):
 
 def WriteOut_Lst2Str2(lst, filename):
     i = 0
-    #outString = 'PageType, Ori_PageID, Lang, Red_PgId'
-    outString = 'Ori_PageID, PageType, pageid, lang, userid'
+    outString = 'PageType, Ori_PageID, Lang, Red_PgId, Postid'
+    #outString = 'Ori_PageID, PageType, pageid, lang, userid'
     for item in lst:
         i += 1
-        #item[3] = str(item[3])
         outString += '\n'
-        outString += ', '.join([item[0],item[1],item[2], item[3], item[4]])
+        outString += ', '.join([item[0],item[1],item[2], str(item[3]), str(item[-1])])
         
 #    result_path = '{}/results'.format(file_loc)
 #    if not os.path.exists(result_path):
@@ -179,11 +180,12 @@ def WriteOut_Lst2Str2(lst, filename):
 #base_data_allarticles_1109 -- process_data_with_topic_location
 data = pd.read_table("/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/base_data_allarticles_1109.csv", 
                              sep=',', error_bad_lines = False)
+data = data.loc[data['selected'] != -1].drop_duplicates()
 
 data.columns.values
 
 #all the event article pages = 4748
-article_df = data[['wiki_lang','article']].drop_duplicates()#4748
+article_df = data[['post_id','wiki_lang','article']].drop_duplicates()#732
 
 #collect all the redirect pages for the current event articles = 26745
 all_article_pages = GetAllPageswithDirect(article_df)
