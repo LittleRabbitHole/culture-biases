@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Nov  9 14:49:00 2018
+for utilities
 
 @author: Ang
 """
@@ -58,14 +59,21 @@ def GetPageRevision(url):
 
 
 
-def WriteAllRevisions(all_articles):
-    
+
+def AllArticlesRevisions(all_articles):
+    #input all article df, output all revisions as json
+    output_json = {}
+    i=0
     for idx, item in all_articles.iterrows():
+        i+=1
+        print (i)
         lang = item.loc["Lang"]
         pageid = str(item.loc["Ori_PageID"])
         wiki_link = "https://{}.wikipedia.org/".format(lang)
-        API = wiki_link + "w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids={}&rvlimit=500".format(pageid)
+        API = wiki_link + "w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|comment|size&pageids={}&rvlimit=500".format(pageid)
         results = GetPageRevision(API)
+        output_json[pageid, lang] = results
+    return output_json
 
     
 #page contributors
@@ -190,68 +198,6 @@ def WriteOut_Lst2Str2(lst, filename):
         f.write(outString)
         f.close()
 
-###main   
-#base_data_allarticles_1109 -- process_data_with_topic_location
-data = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/base_data_allarticles_1109.csv", 
-                             sep=',', error_bad_lines = False)
-data = data.loc[data['selected'] != -1].drop_duplicates()
-
-data.columns.values
-
-#all the event article pages = 732
-article_df = data[['post_id','wiki_lang','article']].drop_duplicates()#732
-
-#collect all the redirect pages for the current event articles = 26745
-all_article_pages = GetAllPageswithDirect(article_df)
-#pickle load
-f = open('/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.pkl', 'wb')   # Pickle file is newly created where foo1.py is
-pickle.dump(all_article_pages, f)          # dump data to f
-f.close() 
-
-#f = open('gradesdict.pkl', 'rb')   # 'r' for reading; can be omitted
-#mydict = pickle.load(f)         # load file content as mydict
-#f.close()
-
-#write all the pages into csv
-WriteOut_Lst2Str1(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.txt") #with title
-WriteOut_Lst2Str2(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt") #without title
-
-#collect all the revisions for the articles
-all_articles = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt", 
-                             sep=',', error_bad_lines = False)
-all_articles = pd.read_table("/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt", 
-                             sep=',', error_bad_lines = False)
-all_articles = all_articles.loc[all_articles['PageType']=='orig']
-all_articles = all_articles[['Ori_PageID', 'Lang', 'Red_PgId']].drop_duplicates()
-
-
-
-
-#collect all the contributors for articles
-all_contributors = GetAllContributors(all_article_pages)
-#pickle load
-f = open('/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors.pkl', 'wb')   # Pickle file is newly created where foo1.py is
-pickle.dump(all_article_pages, f)          # dump data to f
-f.close() 
-
-#f = open('gradesdict.pkl', 'rb')   # 'r' for reading; can be omitted
-#mydict = pickle.load(f)         # load file content as mydict
-#f.close()
-
-WriteOut_Lst2Str1(all_contributors, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors.txt") #with title
-WriteOut_Lst2Str2(all_contributors, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_contributors_notitle.txt") #with title
-
-
-   
-wiki_link = "https://{}.wikipedia.org/".format(lang)
-    
-    
-API = wiki_link + "w/api.php?action=query&format=json&prop=revisions&titles={}&redirects".format(article)
-    
-"/w/api.php?action=query&format=json&prop=contributors&pageids=1543230&pcexcludegroup=bot&pclimit=500"
-    
-    
-    
     
     
     

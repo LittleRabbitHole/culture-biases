@@ -4,8 +4,10 @@
 Created on Wed Nov 14 16:05:37 2018
 some reading to understand revert: https://meta.wikimedia.org/wiki/Research:Revert
 
-use of revert library
+use of mwreverts library
 http://paws-public.wmflabs.org/paws-public/User:EpochFail/editquality/ipython/reverted_detection_demo.ipynb
+
+This includes function of how to identify revert given a (language, revid, pageid)
 
 @author: angli
 """
