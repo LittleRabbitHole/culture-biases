@@ -29,13 +29,14 @@ def returnJsonCheck(response) -> dict:
         print(response.text)
         sys.exit("json error")
 
-
-def GetRevisions(url):
-    #https://en.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids=31445634&rvlimit=500
-    #https://zh.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids%7Ctimestamp%7Cuser%7Cuserid%7Ccomment%7Csize&pageids=1623767&rvlimit=500
-    #https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Executive_Order_13769&rvprop=timestamp|user|comment&generator=revisions
-    #url = "https://en.wikipedia.org/w/api.php?action=query&format=json&rvdir=newer&rvlimit=500&prop=revisions&rvprop=ids|timestamp|user|userid|comment&titles=" + pageTitle
-    #url = API + pageid
+#api calls for revision
+#https://en.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids=31445634&rvlimit=500
+#https://zh.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids%7Ctimestamp%7Cuser%7Cuserid%7Ccomment%7Csize&pageids=1623767&rvlimit=500
+#https://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Executive_Order_13769&rvprop=timestamp|user|comment&generator=revisions
+#url = "https://en.wikipedia.org/w/api.php?action=query&format=json&rvdir=newer&rvlimit=500&prop=revisions&rvprop=ids|timestamp|user|userid|comment&titles=" + pageTitle
+#url = API + pageid
+def GetPageRevision(url):
+    #input the API url for revisions
     revisions = []                                        #list of all accumulated revisions
     next = ''                                             #information for the next request
     while True:
@@ -56,10 +57,18 @@ def GetRevisions(url):
     return revisions
 
 
-url = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids=31445634&rvlimit=500"
-results = GetRevisions(url)
 
+def WriteAllRevisions(all_articles):
+    
+    for idx, item in all_articles.iterrows():
+        lang = item.loc["Lang"]
+        pageid = str(item.loc["Ori_PageID"])
+        wiki_link = "https://{}.wikipedia.org/".format(lang)
+        API = wiki_link + "w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids={}&rvlimit=500".format(pageid)
+        results = GetPageRevision(API)
 
+    
+#page contributors
 def GetPageContributors(lang, pageid):
     #this is to retrieve all contributors given a page id
     wiki_link = "https://{}.wikipedia.org/".format(lang)
@@ -189,7 +198,7 @@ data = data.loc[data['selected'] != -1].drop_duplicates()
 
 data.columns.values
 
-#all the event article pages = 4748
+#all the event article pages = 732
 article_df = data[['post_id','wiki_lang','article']].drop_duplicates()#732
 
 #collect all the redirect pages for the current event articles = 26745
@@ -210,12 +219,12 @@ WriteOut_Lst2Str2(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_P
 #collect all the revisions for the articles
 all_articles = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt", 
                              sep=',', error_bad_lines = False)
+all_articles = pd.read_table("/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt", 
+                             sep=',', error_bad_lines = False)
 all_articles = all_articles.loc[all_articles['PageType']=='orig']
 all_articles = all_articles[['Ori_PageID', 'Lang', 'Red_PgId']].drop_duplicates()
 
 
-wiki_link = "https://{}.wikipedia.org/".format(lang)
-API = wiki_link + "w/api.php?action=query&format=json&prop=revisions&titles={}&redirects".format(article)
 
 
 #collect all the contributors for articles
