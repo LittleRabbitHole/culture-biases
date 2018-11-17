@@ -30,6 +30,7 @@ def returnJsonCheck(response) -> dict:
         print(response.text)
         sys.exit("json error")
 
+
 #api calls for revision
 #https://en.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids|timestamp|user|userid|commen|size&pageids=31445634&rvlimit=500
 #https://zh.wikipedia.org/w/api.php?action=query&format=json&prop=revisions&rvdir=newer&rvprop=ids%7Ctimestamp%7Cuser%7Cuserid%7Ccomment%7Csize&pageids=1623767&rvlimit=500
@@ -75,7 +76,10 @@ def AllArticlesRevisions(all_articles):
         output_json[pageid, lang] = results
     return output_json
 
-    
+
+
+
+
 #page contributors
 def GetPageContributors(lang, pageid):
     #this is to retrieve all contributors given a page id
