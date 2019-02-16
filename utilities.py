@@ -127,25 +127,40 @@ def GetAllContributors(all_article_pages):
     return all_contributors
 
 
-def GetRedirectPages(postid, lang, article):
+def GetRedirectPages(postid, lang, article, pageid):
     #collect all the redirects for a single article
     #redirectAPI = wiki_link + "w/api.php?action=query&pageids=31593941&redirects&prop=redirects&rdlimit=max"
     allpages = [] # [pgid, redir['pageid'], redir['title']]
     wiki_link = "https://{}.wikipedia.org/".format(lang)
-    redirectAPI = wiki_link + "w/api.php?action=query&format=json&titles={}&redirects&prop=redirects&rdlimit=max".format(article)
+    redirectAPI = wiki_link + "w/api.php?action=query&format=json&pageids={}&redirects&prop=redirects&rdlimit=max".format(str(pageid))
     response=requests.get(redirectAPI)
     r_json = returnJsonCheck(response)
-    pgid = list(r_json['query']['pages'].keys())[0]
-    red_pg_lst = r_json['query']['pages'][pgid].get('redirects')
-    #append original page
-    allpages.append(["orig", pgid, lang, pgid, article, postid])
-    #if has the redirect
-    if red_pg_lst is not None:
-        for item in red_pg_lst:
-            id_title = ["redirct", pgid, lang, item['pageid'], item['title'], postid]
+    redirctTo = r_json['query'].get("redirects")
+    #check redirect to other pages
+    if redirctTo is not None:#if the current page is not final page
+        final_page = redirctTo[0].get('to')
+        final_page_pgid = list(r_json['query']['pages'].keys())[0]
+        final_page_title = r_json['query']['pages'][final_page_pgid].get('title')
+        red_pg_lst = r_json['query']['pages'][final_page_pgid].get('redirects')
+        if red_pg_lst is not None:#if has redirect page
+            for item in red_pg_lst:
+                id_title = ["redirct_final", final_page_title, final_page_pgid, item['title'], item['pageid'], postid, article, pageid]
+                allpages.append(id_title)       
+        else: #no redirect page
+            id_title = ["redirct_final", final_page_title, final_page_pgid, "", "", postid, article, pageid]
             allpages.append(id_title)
-    #if without redirect
-    else: allpages.append(["orig", pgid, lang, pgid, r_json['query']['pages'][pgid]['title'], postid])
+    else: #this is the final page
+        final_page = article
+        final_page_pgid = str(pageid)
+        final_page_title = r_json['query']['pages'][final_page_pgid].get('title')
+        red_pg_lst = r_json['query']['pages'][final_page_pgid].get('redirects')
+        if red_pg_lst is not None:
+            for item in red_pg_lst:
+                id_title = ["redirct", final_page_title, final_page_pgid, item['title'], item['pageid'], postid, article, pageid]
+                allpages.append(id_title)       
+        else: 
+            id_title = ["original", final_page_title, final_page_pgid, "", "", postid, article, pageid]
+            allpages.append(id_title)
     return allpages
     
 
@@ -160,7 +175,8 @@ def GetAllPageswithDirect(article_df):
         postid = row.loc['post_id']
         lang = row.loc['wiki_lang']
         article = row.loc['article']  
-        alldirectpages = GetRedirectPages(postid, lang, article)
+        pageid = row.loc['en_pageid'] 
+        alldirectpages = GetRedirectPages(postid, lang, article, pageid)
         directpages_alllist += alldirectpages
     #return
     return directpages_alllist

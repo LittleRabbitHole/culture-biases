@@ -11,14 +11,13 @@ from utilities import GetAllPageswithDirect, WriteOut_Lst2Str1, WriteOut_Lst2Str
 
 ###main   
 #base_data_allarticles_1109 -- process_data_with_topic_location
-data = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/base_data_allarticles_1109.csv", 
-                             sep=',', error_bad_lines = False)
-data = data.loc[data['selected'] != -1].drop_duplicates()
-
+data = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/post_articles_set_filter_death.csv", sep=',', error_bad_lines = False)
+data['wiki_lang'] = "en"
+data['article'] = data['en_title']
 #data.columns.values
 
 #all the event article pages = 732
-article_df = data[['post_id','wiki_lang','article']].drop_duplicates()#732
+article_df = data[['post_id','wiki_lang','article', 'en_pageid']].drop_duplicates()#3265
 
 #collect all the redirect pages for the current event articles = 26745
 all_article_pages = GetAllPageswithDirect(article_df)
