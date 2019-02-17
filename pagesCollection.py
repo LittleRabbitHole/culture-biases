@@ -7,11 +7,13 @@ this for collecting all the pages + redirect pages
 """
 import pandas as pd
 import pickle
-from utilities import GetAllPageswithDirect, WriteOut_Lst2Str1, WriteOut_Lst2Str2
+from utilities import GetAllPageswithDirect, WriteOut_Lst2Str3
 
 ###main   
 #base_data_allarticles_1109 -- process_data_with_topic_location
-data = pd.read_table("/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/post_articles_set_filter_death.csv", sep=',', error_bad_lines = False)
+filedir = "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/"
+filedir = "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/"
+data = pd.read_table(filedir+"post_articles_set_filter_death.csv", sep=',', error_bad_lines = False)
 data['wiki_lang'] = "en"
 data['article'] = data['en_title']
 #data.columns.values
@@ -22,7 +24,7 @@ article_df = data[['post_id','wiki_lang','article', 'en_pageid']].drop_duplicate
 #collect all the redirect pages for the current event articles = 26745
 all_article_pages = GetAllPageswithDirect(article_df)
 #pickle load
-f = open('/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.pkl', 'wb')   # Pickle file is newly created where foo1.py is
+f = open(filedir+'all_article_pages.pkl', 'wb')   # Pickle file is newly created where foo1.py is
 pickle.dump(all_article_pages, f)          # dump data to f
 f.close() 
 
@@ -31,6 +33,7 @@ f.close()
 #f.close()
 
 #write all the pages into csv
-WriteOut_Lst2Str1(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.txt") #with title
-WriteOut_Lst2Str2(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt") #without title
+WriteOut_Lst2Str3(all_article_pages, filedir, "all_article_pages.csv")
+#WriteOut_Lst2Str1(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages.txt") #with title
+#WriteOut_Lst2Str2(all_article_pages, "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/data/all_article_pages_notitle.txt") #without title
 

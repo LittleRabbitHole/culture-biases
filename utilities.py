@@ -221,10 +221,18 @@ def WriteOut_Lst2Str2(lst, filename):
     
     
     
-    
-    
-    
-    
+def WriteOut_Lst2Str3(lst, dir_file, filename):    
+    i = 0
+    outString = '"pagetype","final_page_title","final_page_pgid","redirect_title","redirect_pageid","post_id","post_article","post_pageid"'
+    for lst in lst:
+        i += 1
+        strlst = ['"{}"'.format(str(x)) for x in lst]
+        outString += '\n'
+        outString += ','.join(strlst)
+                
+    with open(dir_file+filename, 'w') as f:
+        f.write(outString)
+        f.close()    
     
     
     
