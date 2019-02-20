@@ -9,22 +9,12 @@ wikitext parser:
 compare to:
     https://www.mediawiki.org/wiki/API:Compare
 
-
 @author: angli
 """
 
 
 import pandas as pd
 import os
-import datetime
-import numpy as np
-import urllib.parse
-import json
-import csv
-import os
-#import urllib
-import pickle
-import itertools
 import requests
 import sys
 from lxml import html
@@ -38,6 +28,11 @@ def returnJsonCheck(response) -> dict:
         print(response)
         print(response.text)
         sys.exit("json error")
+
+
+filedir = "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/"
+filedir = "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/"
+data = pd.read_table(filedir+"all_article_pages.csv", sep=',')
 
 
 api = "https://en.wikipedia.org/w/api.php?action=parse&pageid=39750126&prop=externallinks|revid|text&format=json"
