@@ -47,30 +47,28 @@ def externalLinks(final_article):
 
 
 def LinkSimplify(longlinks):
-    simplifies = []
-    for longsource in longlinks:
-        shortsource = re.findall(r"//(?:[-\w.]|(?:%[\da-fA-F]{2}))+/", longsource)
-        simplifies = simplifies + shortsource
-    
+    shortlink = re.findall(r"//(?:[-\w.]|(?:%[\da-fA-F]{2}))+/", longlinks)    
     #simplifies = list(set(simplifies))
-    return simplifies
+    return shortlink
         
 
-def WriteOutMostCommon(most_common, filedir):
+def WriteOut(lst, filedir, filename):
     i = 0
-    outString = '"link","Count"'
-    for item in most_common:
+    #outString = '"link","Count"'
+    #name, media_type, media_focus, language, notes, region, subcountry, country
+    outString = '"WikiExternalLink","MediaLink","MediaName","MediaType","MediaFocus","MediaLanguage","notes","MediaRegion","MediaSubcountry","MediaCountry","WikiExternalLink_short"'
+    for item in lst:
+        item_str = ["" if x is None else x for x in item]
+        item_str_format = ['"{}"'.format(x) for x in item_str]
         i += 1
-        link = '"{}"'.format(item[0])
-        count = '"{}"'.format(item[1])
         outString += '\n'
-        outString += ','.join([link, count])
+        outString += ','.join(item_str_format)
         
 #    result_path = '{}/results'.format(file_loc)
 #    if not os.path.exists(result_path):
 #        os.makedirs(result_path)
         
-    with open(filedir+"mostcommon_links.csv", 'w') as f:
+    with open(filedir+filename, 'w') as f:
         f.write(outString)
         f.close()
         
@@ -95,17 +93,17 @@ def processLinks(row, domain_dict):
        
 
 
-def matchMediaLinks(medialinks_df, all_full_externalLinks):
+def matchMediaLinks(originallink_list, generalizedLink_list, moreGeneralizedLink_list, all_full_externalLinks):
+    
     fulllink_medialink = []
     i=1
     for fulllink in all_full_externalLinks:
         i+=1
-        if i%50==0: print (i)
+        if i%100==0: print (i)
         
         matched = None
         
-        for ind, row in medialinks_df.iterrows():
-            orglink = row['link']
+        for orglink in originallink_list:
             #generalizedLink = row['generalizedLink']
             #moreGeneralizedLink = row['moreGeneralizedLink']
             if orglink in fulllink:#if found from original link
@@ -113,24 +111,25 @@ def matchMediaLinks(medialinks_df, all_full_externalLinks):
                 break
         
         if matched is None:#if not found from original link, find from genealized link
-            for ind, row in medialinks_df.iterrows():
-                orglink2 = row['link']
-                generalizedLink = row['generalizedLink']
+            for j in range(len(generalizedLink_list)):
+                generalizedLink = generalizedLink_list[j]
                 #moreGeneralizedLink = row['moreGeneralizedLink']
                 if generalizedLink is not None and generalizedLink in fulllink:#if found
+                    orglink2 = originallink_list[j]
                     matched = orglink2
                     break
         
         if matched is None:#not found, found the more generalized link
-            for ind, row in medialinks_df.iterrows():
-                orglink3 = row['link']
+            for w in range(len(moreGeneralizedLink_list)):
+                moreGeneralizedLink = moreGeneralizedLink_list[j]
                 #generalizedLink = row['generalizedLink']
-                moreGeneralizedLink = row['moreGeneralizedLink']
                 if moreGeneralizedLink is not None and moreGeneralizedLink in fulllink:
+                    orglink3 = originallink_list[w]
                     matched = orglink3
                     break
                         
         fulllink_medialink.append([fulllink, matched])
+        
     return fulllink_medialink
 
 if __name__ == '__main__':
@@ -150,14 +149,37 @@ if __name__ == '__main__':
     all_full_externalLinks = pickle.load(f)         # load file content as mydict
     f.close()
     
-    medialinks_df = abyznewsDict()
+    #match links
+    originallink_list, generalizedLink_list, moreGeneralizedLink_list, link_dict = abyznewsDict()
     
-    all_full_externalLinks = list(set(all_full_externalLinks))
+    matchMediaLinks = matchMediaLinks(originallink_list, generalizedLink_list, moreGeneralizedLink_list, all_full_externalLinks)
+    #fulllink_medialink_count = sum([1 if x[1] is not None else 0 for x in matchMediaLinks])
     
-    fulllink_medialink_count = sum([1 if len(x[1])>0 else 0 for x in fulllink_medialink])
+    #match media information
+    final_media_output = []
+    for lst in matchMediaLinks:
+        medialink = lst[1]
+        if medialink is not None:
+            mediaInfo = link_dict[medialink]
+            lst_updated = lst + mediaInfo
+        else:
+            mediaInfo = 8*[None]
+            lst_updated = lst + mediaInfo
+        
+        final_media_output.append(lst_updated)
     
+    final_media_output_final = [lst+LinkSimplify(lst[0]) for lst in final_media_output]
     
+    #pickle write
+#    f = open(filedir+'all_fullexternalLinks_mediamatched.pkl', 'wb')   # Pickle file is newly created where foo1.py is
+#    pickle.dump(final_media_output_final, f)          # dump data to f
+#    f.close() 
+
+    f = open(filedir+'all_fullexternalLinks_mediamatched.pkl', 'rb')   # 'r' for reading; can be omitted
+    final_media_output_final = pickle.load(f)         # load file content as mydict
+    f.close()
     
+    WriteOut(final_media_output_final, filedir, "all_fullexternalLinks_mediamatched.csv")
     
     #simplify the full external links
     all_short_externalLinks = LinkSimplify(all_full_externalLinks)

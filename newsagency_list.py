@@ -32,13 +32,16 @@ def abyznewsDict():
     filedir = "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/abyznewslinks/"
     
 #    with open(filedir+'mediasources.json') as f:
-#        data = json.load(f)
+#        js_data = json.load(f)
 #    f.close()
     
     data = pd.read_table(filedir+"mediasources.csv", sep=',')
     data["generalizedLink"] = data['link'].apply(generalizeLink)
     data["moreGeneralizedLink"] = data['link'].apply(moreGeneralizeLink)
     
+    originallink_list = list(data['link'])
+    generalizedLink_list = list(data['generalizedLink'])
+    moreGeneralizedLink_list = list(data['moreGeneralizedLink'])
     
     
     
@@ -52,18 +55,18 @@ def abyznewsDict():
 #    generalizedLinks = list(set(generalizedLinks))    
 #    
 #    
-#    link_dict = {}
-#    for lst in data:
-#        link = lst['link']
-#        name = lst['name']
-#        media_type = lst['media_type']
-#        media_focus = lst['media_focus']
-#        language = lst['language']
-#        notes = lst['notes']
-#        region = lst['region']
-#        subcountry = lst['subcountry']
-#        country = lst['country']
-#        link_dict[link] = [name, media_type, media_focus, language, notes, region, subcountry, country]
-#    
-#    return allnewslinks, link_dict
-    return data
+    link_dict = {}
+    for ind, lst in data.iterrows():
+        link = lst['link']
+        name = lst['name']
+        media_type = lst['media_type']
+        media_focus = lst['media_focus']
+        language = lst['language']
+        notes = lst['notes']
+        region = lst['region']
+        subcountry = lst['subcountry']
+        country = lst['country']
+        link_dict[link] = [name, media_type, media_focus, language, notes, region, subcountry, country]
+    
+    return originallink_list, generalizedLink_list, moreGeneralizedLink_list, link_dict
+   
