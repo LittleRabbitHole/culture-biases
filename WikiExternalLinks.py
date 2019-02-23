@@ -114,16 +114,16 @@ def matchMediaLinks(originallink_list, generalizedLink_list, moreGeneralizedLink
             for j in range(len(generalizedLink_list)):
                 generalizedLink = generalizedLink_list[j]
                 #moreGeneralizedLink = row['moreGeneralizedLink']
-                if generalizedLink is not None and generalizedLink in fulllink:#if found
+                if type(generalizedLink) is not float and generalizedLink in fulllink:#if found
                     orglink2 = originallink_list[j]
                     matched = orglink2
                     break
         
         if matched is None:#not found, found the more generalized link
             for w in range(len(moreGeneralizedLink_list)):
-                moreGeneralizedLink = moreGeneralizedLink_list[j]
+                moreGeneralizedLink = moreGeneralizedLink_list[w]
                 #generalizedLink = row['generalizedLink']
-                if moreGeneralizedLink is not None and moreGeneralizedLink in fulllink:
+                if type(moreGeneralizedLink) is not float and moreGeneralizedLink in fulllink:
                     orglink3 = originallink_list[w]
                     matched = orglink3
                     break
@@ -134,7 +134,7 @@ def matchMediaLinks(originallink_list, generalizedLink_list, moreGeneralizedLink
 
 if __name__ == '__main__':
     filedir = "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/"
-    #filedir = "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/"
+    filedir = "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/data/"
     data = pd.read_table(filedir+"all_article_pages.csv", sep=',')
     #data.columns.values
     final_article = data[['final_page_pgid', 'post_id']].drop_duplicates()
@@ -171,15 +171,17 @@ if __name__ == '__main__':
     final_media_output_final = [lst+LinkSimplify(lst[0]) for lst in final_media_output]
     
     #pickle write
-#    f = open(filedir+'all_fullexternalLinks_mediamatched.pkl', 'wb')   # Pickle file is newly created where foo1.py is
-#    pickle.dump(final_media_output_final, f)          # dump data to f
-#    f.close() 
+    f = open(filedir+'all_fullexternalLinks_mediamatched.pkl', 'wb')   # Pickle file is newly created where foo1.py is
+    pickle.dump(final_media_output_final, f)          # dump data to f
+    f.close() 
+    
+     WriteOut(final_media_output_final, filedir, "all_fullexternalLinks_mediamatched.csv")
 
     f = open(filedir+'all_fullexternalLinks_mediamatched.pkl', 'rb')   # 'r' for reading; can be omitted
     final_media_output_final = pickle.load(f)         # load file content as mydict
     f.close()
     
-    WriteOut(final_media_output_final, filedir, "all_fullexternalLinks_mediamatched.csv")
+   
     
     #simplify the full external links
     all_short_externalLinks = LinkSimplify(all_full_externalLinks)

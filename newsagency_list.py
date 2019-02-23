@@ -30,18 +30,22 @@ def moreGeneralizeLink(link):
 
 def abyznewsDict():
     filedir = "/Users/angli/Ang/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/abyznewslinks/"
+    filedir = "/Users/jiajunluo/OneDrive/Documents/Pitt_PhD/ResearchProjects/WikiWorldEvent/Project_IS_Neutrality/abyznewslinks/"
     
 #    with open(filedir+'mediasources.json') as f:
 #        js_data = json.load(f)
 #    f.close()
     
     data = pd.read_table(filedir+"mediasources.csv", sep=',')
-    data["generalizedLink"] = data['link'].apply(generalizeLink)
-    data["moreGeneralizedLink"] = data['link'].apply(moreGeneralizeLink)
+#    data["generalizedLink"] = data['link'].apply(generalizeLink)
+#    data["moreGeneralizedLink"] = data['link'].apply(moreGeneralizeLink)
+#    data.to_csv(filedir+"mediasources_generalizedLink.csv", index=False)
+
+    g_data = pd.read_table(filedir+"mediasources_generalizedLink.csv", sep=',')
     
-    originallink_list = list(data['link'])
-    generalizedLink_list = list(data['generalizedLink'])
-    moreGeneralizedLink_list = list(data['moreGeneralizedLink'])
+    originallink_list = list(g_data['link'])
+    generalizedLink_list = list(g_data['generalizedLink'])
+    moreGeneralizedLink_list = list(g_data['moreGeneralizedLink'])
     
     
     
